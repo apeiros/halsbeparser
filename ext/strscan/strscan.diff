@@ -1,0 +1,105 @@
+--- ../../ruby-1.8.7/ext/strscan/strscan.c	2007-02-13 00:01:19.000000000 +0100
++++ strscan.c	2008-12-08 03:18:47.000000000 +0100
+@@ -963,6 +963,92 @@
+ }
+ 
+ /*
++ * call-seq: size
++ *
++ * Return the amount of subgroups in the most recent match.
++ * The full match counts as a subgroup.
++ *
++ *   s = StringScanner.new("Fri Dec 12 1975 14:39")
++ *   s.scan(/(\w+) (\w+) (\d+) /)       # -> "Fri Dec 12 "
++ *   s.size                             # -> 4
++ */
++static VALUE
++strscan_size(VALUE self)
++{
++    struct strscanner *p;
++
++    GET_SCANNER(self, p);
++    if (! MATCHED_P(p))        return Qnil;
++    return INT2FIX(p->regs.num_regs);
++}
++
++/*
++ * call-seq: size
++ *
++ * Returns the subgroups in the most recent match (not including the full match).
++ * If nothing was priorly matched, it returns nil.
++ *
++ *   s = StringScanner.new("Fri Dec 12 1975 14:39")
++ *   s.scan(/(\w+) (\w+) (\d+) /)       # -> "Fri Dec 12 "
++ *   s.captures                         # -> ["Fri", "Dec", "12"]
++ *   s.scan(/(\w+) (\w+) (\d+) /)       # -> nil
++ *   s.captures                         # -> nil
++ */
++static VALUE
++strscan_captures(VALUE self)
++{
++    struct strscanner *p;
++
++    GET_SCANNER(self, p);
++    if (! MATCHED_P(p))        return Qnil;
++    
++    int   i;
++    int   num_regs = p->regs.num_regs;
++    VALUE result   = rb_ary_new2(num_regs);
++
++    for(i=1; i<num_regs; i++) {
++      rb_ary_push(
++        result,
++        extract_range(p, p->prev + p->regs.beg[i], p->prev + p->regs.end[i])
++      );
++    }
++    
++    return result;
++}
++
++/*
++ *  call-seq:
++ *     scanner.values_at( i1, i2, ... iN )   -> an_array
++ *  
++ * Returns the subgroups in the most recent match at the given indices.
++ * If nothing was priorly matched, it returns nil.
++ *
++ *   s = StringScanner.new("Fri Dec 12 1975 14:39")
++ *   s.scan(/(\w+) (\w+) (\d+) /)       # -> "Fri Dec 12 "
++ *   s.values_at 0, -1, 5, 2            # -> ["Fri Dec 12 ", "12", nil, "Dec"]
++ *   s.scan(/(\w+) (\w+) (\d+) /)       # -> nil
++ *   s.captures                         # -> nil
++ */
++
++static VALUE
++strscan_values_at(int argc, VALUE *argv, VALUE self)
++{
++    struct strscanner *p;
++
++    GET_SCANNER(self, p);
++    if (! MATCHED_P(p))        return Qnil;
++
++    long i;
++    VALUE new_ary = rb_ary_new2(argc);
++
++    for (i=0; i<argc; i++) {
++        rb_ary_push(new_ary, strscan_aref(self, argv[i]));
++    }
++
++    return new_ary;
++}
++
++/*
+  * Return the <i><b>pre</b>-match</i> (in the regular expression sense) of the last scan.
+  *
+  *   s = StringScanner.new('test string')
+@@ -1311,6 +1397,9 @@
+     rb_define_method(StringScanner, "[]",          strscan_aref,        1);
+     rb_define_method(StringScanner, "pre_match",   strscan_pre_match,   0);
+     rb_define_method(StringScanner, "post_match",  strscan_post_match,  0);
++    rb_define_method(StringScanner, "size",        strscan_size,        0);
++    rb_define_method(StringScanner, "captures",    strscan_captures,    0);
++    rb_define_method(StringScanner, "values_at",   strscan_values_at,   -1);
+ 
+     rb_define_method(StringScanner, "rest",        strscan_rest,        0);
+     rb_define_method(StringScanner, "rest_size",   strscan_rest_size,   0);
