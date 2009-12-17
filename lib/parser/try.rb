@@ -6,6 +6,7 @@ class Parser
     :doc_nesting,  # the current /- comment -/ nesting depth
     :indent,       # the current indent
     :node,         # the current node
-    :subnode_names # the names of the subnodes
+    :children,     # the children of the current node
+    :child_names   # the names of named children
   )
 end

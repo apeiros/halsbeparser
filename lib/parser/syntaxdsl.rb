@@ -31,7 +31,7 @@ class Parser
       @__patterns__[pattern_name] || raise(ArgumentError, "Pattern #{pattern_name} not found")
     end
 
-    def terminal(name, scan=nil, &scan_block)
+    def node(name, scan=nil, &scan_block)
       node    = Class.new(Node)
       node_id = name.to_s.snake_case.to_sym
       scan    = r(node_id) unless scan || scan_block
@@ -42,6 +42,8 @@ class Parser
         @node_id   = node_id
       end
     end
-    alias token terminal
+    alias terminal node
+    alias token node
+    alias transient node
   end
 end

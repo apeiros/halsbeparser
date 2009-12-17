@@ -1,0 +1,16 @@
+Since I'm probably using non-standard terminology, so let me explain what means
+what:
+
+Parse-Expression: An expression that tells the parser how to proceed with
+                  parsing. Can be a regex, a boolean expression with nodes,
+                  transients, terminals and tokens or any other piece of code
+Node:             Anything that ends up in the AST.
+Terminal:         A node that has no child-nodes in the AST. Or in other words,
+                  whose parse-expression is only a regex or consists only of
+                  tokens.
+Token:            A parse-expression that is not composed by further parse-
+                  expressions. Usually a regex.
+Transient:        A parse-expression that does not end up in the AST itself.
+                  Usually used to branch out several possibilities and aid with
+                  more understandable naming.
+

@@ -30,6 +30,7 @@ BareTest.suite 'Syntax' do
   
         assert "Is a #{token}" do
           @parser.parse(code, token)
+          @parser.terminate!
           equal token, @parser.root.children.first.class.node_id
         end
       end
